@@ -1,0 +1,24 @@
+version: '3'
+
+tasks:
+  build:
+    env:
+      GORELEASER_CURRENT_TAG: "v0.0.0"
+    cmd: goreleaser build --snapshot --clean --single-target --output go-turborepo-remote-cache
+
+  download:
+    cmd: go mod download
+
+  tidy:
+    cmd: go mod tidy -v
+
+  format:
+    cmds:
+      - go fmt ./...
+
+  generate:
+    cmds:
+      - go generate ./...
+
+  test:
+    cmd: go test -race ./...

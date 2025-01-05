@@ -1,0 +1,49 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Set up Task
+        uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get the latest version
+        id: latest
+        uses: miniscruff/changie-action@v2
+        with:
+          version: latest
+          args: latest
+
+      - name: Add env vars
+        run: |
+          echo GORELEASER_CURRENT_TAG=${{ steps.latest.outputs.output }}>> $GITHUB_ENV
+          echo RELEASE_NOTES_PATH=.changes/${{ steps.latest.outputs.output }}.md >> $GITHUB_ENV
+
+      - name: Create release
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          args: --clean --release-notes=${{ env.RELEASE_NOTES_PATH }} --skip=validate
+        env:
+          GORELEASER_CURRENT_TAG: ${{ env.GORELEASER_CURRENT_TAG }}
+          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.app-token }}
+          GOPATH: ${{ env.GOPATH }}
+          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+
+      - name: Upload release
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-turborepo-remote-cache
+          path: dist/*
