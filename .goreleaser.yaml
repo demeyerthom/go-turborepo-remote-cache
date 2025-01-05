@@ -3,11 +3,6 @@ project_name: go-turborepo-remote-cache
 env:
   - SKIP_UPLOAD={{ if index .Env "SKIP_UPLOAD"  }}{{ .Env.SKIP_UPLOAD }}{{ else }}false{{ end }}
 
-before:
-  hooks:
-    - task tidy
-    - task download
-
 # Build step
 builds:
   - id: go-turborepo-remote-cache
